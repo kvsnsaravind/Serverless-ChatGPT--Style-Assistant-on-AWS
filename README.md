@@ -70,4 +70,19 @@ curl -X POST https://your-api-url/prod/chat \
 * Cohere Large Language Models
 * Python 3.9+
 * Requests library
+---
+
+## Steps involved
+1. **Create an AWS Lambda function** with Python 3.9 or later runtime.
+2. Set environment variables:
+
+   * `BEDROCK_API_URL` — your AWS Bedrock inference endpoint URL.
+   * `BEDROCK_API_KEY` — your API key or IAM credentials.
+   * `COHERE_MODEL_ID` — the model you want to use from Bedrock (e.g., `"cohere-command-xlarge"`).
+3. Create an **API Gateway** REST API with a POST method integrated to this Lambda function.
+4. Deploy the API and use the endpoint to send JSON payloads like `{"message": "Hello, how are you?"}`.
+5. The response JSON will contain the generated text under `"reply"`.
+
+---
+
 
