@@ -1,0 +1,53 @@
+### AWS Lambda function(python)
+
+import json
+import os
+import boto3
+import requests
+
+# Environment variables (set these in Lambda configuration)
+BEDROCK_API_URL = os.environ.get("BEDROCK_API_URL")  # Bedrock endpoint
+BEDROCK_API_KEY = os.environ.get("BEDROCK_API_KEY")  # Bedrock API key or credentials
+
+COHERE_MODEL_ID = os.environ.get("COHERE_MODEL_ID", "cohere-command-xlarge")  # example model ID
+
+def lambda_handler(event, context):
+    try:
+        # Parse incoming user message from API Gateway event
+        body = json.loads(event.get("body", "{}"))
+        user_message = body.get("message", "")
+        if not user_message:
+            return _response(400, {"error": "No message provided"})
+
+        # Prepare payload for Bedrock API (example payload, adjust as per Bedrock docs)
+        payload = {
+            "modelId": COHERE_MODEL_ID,
+            "inputText": user_message,
+            "maxTokens": 512,
+            "temperature": 0.7,
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+            "x-api-key": BEDROCK_API_KEY
+        }
+
+        # Call Bedrock inference endpoint
+        response = requests.post(BEDROCK_API_URL, json=payload, headers=headers)
+        response.raise_for_status()
+
+        result = response.json()
+        generated_text = result.get("generatedText", "")
+
+        return _response(200, {"reply": generated_text})
+
+    except Exception as e:
+        return _response(500, {"error": str(e)})
+
+
+def _response(status_code, body):
+    return {
+        "statusCode": status_code,
+        "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+        "body": json.dumps(body),
+    }
